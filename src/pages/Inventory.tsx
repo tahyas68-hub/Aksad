@@ -173,10 +173,8 @@ export default function InventoryPage() {
             onChange={(e) => setFormData({...formData, category: e.target.value})}
           >
             <option value="">اختر التصنيف</option>
-            <option value="Electronics">إلكترونيات</option>
-            <option value="Appliances">أجهزة منزلية</option>
-            <option value="Furniture">أثاث</option>
-            <option value="Motors">محركات</option>
+            <option value="بطاريات">بطاريات</option>
+            <option value="إطارات">إطارات</option>
           </Select>
           <div className="grid grid-cols-2 gap-4">
             <Input 

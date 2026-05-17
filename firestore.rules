@@ -1,0 +1,150 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() { return request.auth != null; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    function isMerchantOwner(merchantId) {
+      return isSignedIn() && request.auth.uid == merchantId;
+    }
+
+    match /merchants/{merchantId} {
+      allow read: if isMerchantOwner(merchantId);
+      allow create: if isMerchantOwner(merchantId) 
+                    && incoming().keys().hasAll(['uid', 'businessName', 'currency', 'createdAt', 'updatedAt'])
+                    && incoming().uid == merchantId
+                    && incoming().businessName is string && incoming().businessName.size() > 0 && incoming().businessName.size() <= 100
+                    && incoming().currency is string && incoming().currency.size() <= 10
+                    && incoming().createdAt == request.time
+                    && incoming().updatedAt == request.time;
+      allow update: if isMerchantOwner(merchantId) 
+                    && incoming().uid == existing().uid
+                    && incoming().createdAt == existing().createdAt
+                    && incoming().updatedAt == request.time
+                    && incoming().diff(existing()).affectedKeys().hasOnly(['businessName', 'currency', 'updatedAt'])
+                    && incoming().businessName is string && incoming().businessName.size() > 0 && incoming().businessName.size() <= 100
+                    && incoming().currency is string && incoming().currency.size() <= 10;
+      allow delete: if false;
+      
+      match /customers/{customerId} {
+        allow read: if isMerchantOwner(merchantId);
+        allow create: if isMerchantOwner(merchantId) && isValidId(customerId)
+                      && incoming().keys().hasAll(['merchantId', 'name', 'phone', 'createdAt', 'updatedAt'])
+                      && incoming().merchantId == merchantId
+                      && incoming().name is string && incoming().name.size() > 0 && incoming().name.size() <= 100
+                      && incoming().phone is string && incoming().phone.size() > 0 && incoming().phone.size() <= 30
+                      && incoming().createdAt == request.time
+                      && incoming().updatedAt == request.time;
+        allow update: if isMerchantOwner(merchantId) && isValidId(customerId)
+                      && incoming().merchantId == existing().merchantId
+                      && incoming().createdAt == existing().createdAt
+                      && incoming().updatedAt == request.time
+                      && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'phone', 'address', 'nationalId', 'updatedAt'])
+                      && incoming().name is string && incoming().name.size() > 0 && incoming().name.size() <= 100
+                      && incoming().phone is string && incoming().phone.size() > 0 && incoming().phone.size() <= 30;
+        allow delete: if isMerchantOwner(merchantId) && isValidId(customerId);
+      }
+
+      match /products/{productId} {
+        allow read: if isMerchantOwner(merchantId);
+        allow create: if isMerchantOwner(merchantId) && isValidId(productId)
+                      && incoming().keys().hasAll(['merchantId', 'name', 'price', 'stock', 'status', 'createdAt', 'updatedAt'])
+                      && incoming().merchantId == merchantId
+                      && incoming().name is string && incoming().name.size() > 0 && incoming().name.size() <= 150
+                      && incoming().price is number && incoming().price >= 0
+                      && incoming().stock is number && incoming().stock >= 0
+                      && incoming().status in ['available', 'out_of_stock']
+                      && incoming().createdAt == request.time
+                      && incoming().updatedAt == request.time;
+        allow update: if isMerchantOwner(merchantId) && isValidId(productId)
+                      && incoming().merchantId == existing().merchantId
+                      && incoming().createdAt == existing().createdAt
+                      && incoming().updatedAt == request.time
+                      && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'price', 'stock', 'status', 'imageUrl', 'updatedAt'])
+                      && incoming().name is string && incoming().name.size() > 0 && incoming().name.size() <= 150
+                      && incoming().price is number && incoming().price >= 0
+                      && incoming().stock is number && incoming().stock >= 0
+                      && incoming().status in ['available', 'out_of_stock'];
+        allow delete: if isMerchantOwner(merchantId) && isValidId(productId);
+      }
+
+      match /contracts/{contractId} {
+        allow read: if isMerchantOwner(merchantId);
+        allow create: if isMerchantOwner(merchantId) && isValidId(contractId)
+                      && incoming().keys().hasAll(['merchantId', 'customerId', 'productId', 'startDate', 'totalAmount', 'remainingAmount', 'status', 'installments', 'createdAt', 'updatedAt'])
+                      && incoming().merchantId == merchantId
+                      && incoming().customerId is string && incoming().customerId.size() <= 128
+                      && incoming().productId is string && incoming().productId.size() <= 128
+                      && incoming().startDate is string && incoming().startDate.size() <= 30
+                      && incoming().totalAmount is number && incoming().totalAmount > 0
+                      && incoming().remainingAmount is number && incoming().remainingAmount >= 0
+                      && incoming().status in ['active', 'completed', 'archived', 'cancelled']
+                      && incoming().installments is list && incoming().installments.size() <= 120
+                      && incoming().createdAt == request.time
+                      && incoming().updatedAt == request.time
+                      && exists(/databases/$(database)/documents/merchants/$(merchantId)/customers/$(incoming().customerId))
+                      && exists(/databases/$(database)/documents/merchants/$(merchantId)/products/$(incoming().productId));
+        allow update: if isMerchantOwner(merchantId) && isValidId(contractId)
+                      && incoming().merchantId == existing().merchantId
+                      && incoming().customerId == existing().customerId
+                      && incoming().productId == existing().productId
+                      && incoming().createdAt == existing().createdAt
+                      && incoming().updatedAt == request.time
+                      && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'remainingAmount', 'installments', 'updatedAt'])
+                      && incoming().status in ['active', 'completed', 'archived', 'cancelled']
+                      && incoming().remainingAmount is number && incoming().remainingAmount >= 0
+                      && incoming().installments is list && incoming().installments.size() <= 120;
+        allow delete: if isMerchantOwner(merchantId) && isValidId(contractId);
+      }
+
+      match /payments/{paymentId} {
+        allow read: if isMerchantOwner(merchantId);
+        allow create: if isMerchantOwner(merchantId) && isValidId(paymentId)
+                      && incoming().keys().hasAll(['merchantId', 'contractId', 'amount', 'date', 'createdAt', 'updatedAt'])
+                      && incoming().merchantId == merchantId
+                      && incoming().contractId is string && incoming().contractId.size() <= 128
+                      && incoming().amount is number && incoming().amount > 0
+                      && incoming().date is string && incoming().date.size() <= 30
+                      && incoming().createdAt == request.time
+                      && incoming().updatedAt == request.time
+                      && exists(/databases/$(database)/documents/merchants/$(merchantId)/contracts/$(incoming().contractId));
+        allow update: if isMerchantOwner(merchantId) && isValidId(paymentId)
+                      && incoming().merchantId == existing().merchantId
+                      && incoming().contractId == existing().contractId
+                      && incoming().createdAt == existing().createdAt
+                      && incoming().updatedAt == request.time
+                      && incoming().diff(existing()).affectedKeys().hasOnly(['amount', 'date', 'updatedAt'])
+                      && incoming().amount is number && incoming().amount > 0
+                      && incoming().date is string && incoming().date.size() <= 30;
+        allow delete: if isMerchantOwner(merchantId) && isValidId(paymentId);
+      }
+
+      match /notifications/{notificationId} {
+        allow read: if isMerchantOwner(merchantId);
+        allow create: if isMerchantOwner(merchantId) && isValidId(notificationId)
+                      && incoming().keys().hasAll(['merchantId', 'title', 'message', 'type', 'read', 'date', 'createdAt', 'updatedAt'])
+                      && incoming().merchantId == merchantId
+                      && incoming().title is string && incoming().title.size() <= 200
+                      && incoming().message is string && incoming().message.size() <= 1000
+                      && incoming().type in ['info', 'success', 'warning', 'error']
+                      && incoming().read is bool
+                      && incoming().date is string && incoming().date.size() <= 30
+                      && incoming().createdAt == request.time
+                      && incoming().updatedAt == request.time;
+        allow update: if isMerchantOwner(merchantId) && isValidId(notificationId)
+                      && incoming().merchantId == existing().merchantId
+                      && incoming().createdAt == existing().createdAt
+                      && incoming().updatedAt == request.time
+                      && incoming().diff(existing()).affectedKeys().hasOnly(['read', 'updatedAt'])
+                      && incoming().read is bool;
+        allow delete: if isMerchantOwner(merchantId) && isValidId(notificationId);
+      }
+    }
+  }
+}

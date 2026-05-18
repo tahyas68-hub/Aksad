@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useAppStore } from '../stores/useAppStore';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -14,7 +14,7 @@ import { format } from 'date-fns';
 export default function ContractsPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { contracts, customers, products, createContract, deleteContract } = useAppStore();
+  const { contracts, customers, products, createContract, deleteContract, currentUser } = useAppStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [tab, setTab] = useState<'active' | 'archived'>('active');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,6 +43,10 @@ export default function ContractsPage() {
       if (p) setTotalAmount(p.price.toString());
     }
   }, [productId, products]);
+
+  if (currentUser?.role === 'customer') {
+    return <Navigate to="/" replace />;
+  }
 
   const filteredContracts = contracts.filter(c => 
     c.status === tab && 

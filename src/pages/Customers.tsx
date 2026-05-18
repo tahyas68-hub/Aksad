@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { useAppStore } from '../stores/useAppStore';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -11,10 +11,14 @@ import { parseExcel, downloadExcel } from '../lib/excel';
 
 export default function CustomersPage() {
   const navigate = useNavigate();
-  const { customers, contracts, addCustomer, updateCustomer, deleteCustomer, importCustomers } = useAppStore();
+  const { customers, contracts, addCustomer, updateCustomer, deleteCustomer, importCustomers, currentUser } = useAppStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  if (currentUser?.role === 'customer') {
+    return <Navigate to="/" replace />;
+  }
   
   const [formData, setFormData] = useState({
     name: '',

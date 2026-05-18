@@ -9,12 +9,17 @@ import { Select } from '../components/ui/Select';
 import { Search, Plus, Upload, Download, Edit2, Trash2 } from 'lucide-react';
 import { formatCurrency } from '../lib/utils';
 import { parseExcel, downloadExcel } from '../lib/excel';
+import { Navigate } from 'react-router-dom';
 
 export default function InventoryPage() {
-  const { products, addProduct, updateProduct, deleteProduct, importProducts } = useAppStore();
+  const { products, addProduct, updateProduct, deleteProduct, importProducts, currentUser } = useAppStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  if (currentUser?.role === 'customer') {
+    return <Navigate to="/" replace />;
+  }
   
   const [formData, setFormData] = useState({
     name: '',

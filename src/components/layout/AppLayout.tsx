@@ -1,19 +1,23 @@
 import React from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Package, Users, FileText, PieChart, Bell, Settings } from 'lucide-react';
+import { Home, Package, Users, FileText, PieChart, Bell, Settings, ShieldCheck, History } from 'lucide-react';
 import { useAppStore } from '../../stores/useAppStore';
 import { cn } from '../../lib/utils';
 
 export default function AppLayout() {
   const location = useLocation();
-  const unreadNotifications = useAppStore(state => state.notifications.filter(n => !n.read).length);
+  const { notifications, currentUser } = useAppStore();
+  const unreadNotifications = notifications.filter(n => !n.read).length;
 
   const getPageTitle = () => {
     switch (location.pathname) {
-      case '/': return 'لوحة القيادة';
+      case '/': return 'الرئيسية';
       case '/inventory': return 'المخزون';
+      case '/products': return 'المنتجات';
       case '/customers': return 'العملاء';
+      case '/users': return 'المستخدمين';
       case '/contracts': return 'العقود';
+      case '/my-contracts': return 'عقودي';
       case '/reports': return 'التقارير';
       case '/notifications': return 'الإشعارات';
       case '/settings': return 'الإعدادات';
@@ -23,6 +27,8 @@ export default function AppLayout() {
         return 'النظام';
     }
   };
+
+  const role = currentUser?.role || 'merchant';
 
   return (
     <div className="flex flex-col h-screen bg-[#f3f5e9] dark:bg-[#1f241a] text-gray-900 dark:text-gray-100 w-full overflow-hidden max-w-md mx-auto relative shadow-2xl">
@@ -53,10 +59,31 @@ export default function AppLayout() {
       <nav className="fixed bottom-0 mt-auto w-full max-w-md bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 pb-safe z-20 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)]">
         <div className="flex justify-around items-center h-16">
           <NavItem to="/" icon={<Home className="w-6 h-6" />} label="الرئيسية" />
-          <NavItem to="/inventory" icon={<Package className="w-6 h-6" />} label="المخزون" />
-          <NavItem to="/customers" icon={<Users className="w-6 h-6" />} label="العملاء" />
-          <NavItem to="/contracts" icon={<FileText className="w-6 h-6" />} label="العقود" />
-          <NavItem to="/reports" icon={<PieChart className="w-6 h-6" />} label="التقارير" />
+          
+          {role === 'admin' && (
+            <>
+              <NavItem to="/users" icon={<ShieldCheck className="w-6 h-6" />} label="المستخدمين" />
+              <NavItem to="/contracts" icon={<FileText className="w-6 h-6" />} label="العقود" />
+              <NavItem to="/reports" icon={<PieChart className="w-6 h-6" />} label="التقارير" />
+            </>
+          )}
+
+          {role === 'merchant' && (
+            <>
+              <NavItem to="/inventory" icon={<Package className="w-6 h-6" />} label="المخزون" />
+              <NavItem to="/customers" icon={<Users className="w-6 h-6" />} label="العملاء" />
+              <NavItem to="/contracts" icon={<FileText className="w-6 h-6" />} label="العقود" />
+              <NavItem to="/reports" icon={<PieChart className="w-6 h-6" />} label="التقارير" />
+            </>
+          )}
+
+          {role === 'customer' && (
+            <>
+              <NavItem to="/products" icon={<Package className="w-6 h-6" />} label="المنتجات" />
+              <NavItem to="/my-contracts" icon={<FileText className="w-6 h-6" />} label="عقودي" />
+              <NavItem to="/payment-timeline" icon={<History className="w-6 h-6" />} label="سجل الدفعات" />
+            </>
+          )}
         </div>
       </nav>
     </div>

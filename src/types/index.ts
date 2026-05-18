@@ -1,3 +1,16 @@
+export type UserRole = 'admin' | 'merchant' | 'customer';
+
+export interface User {
+  id: string;
+  name: string;
+  username: string; // or phone
+  password?: string; // in a real app, never store passwords in plaintext
+  role: UserRole;
+  isActive: boolean;
+  lastLogin?: string;
+  createdAt: string;
+}
+
 export type InstallmentType = 'daily' | 'weekly' | 'monthly';
 export type ContractStatus = 'active' | 'completed' | 'archived';
 export type InstallmentStatus = 'pending' | 'paid' | 'late';

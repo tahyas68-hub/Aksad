@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useAppStore } from '../stores/useAppStore';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
@@ -10,8 +10,12 @@ import { format } from 'date-fns';
 export default function CustomerDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { customers, contracts, products, deleteCustomer } = useAppStore();
+  const { customers, contracts, products, deleteCustomer, currentUser } = useAppStore();
   const [tab, setTab] = useState<'contracts' | 'history'>('contracts');
+
+  if (currentUser?.role === 'customer') {
+    return <Navigate to="/" replace />;
+  }
 
   const customer = customers.find(c => c.id === id);
   if (!customer) return <div className="p-4 text-center">العميل غير موجود</div>;

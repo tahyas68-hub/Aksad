@@ -5,9 +5,14 @@ import { Button } from '../components/ui/Button';
 import { Download, TrendingUp, AlertTriangle, CheckCircle, PieChart as PieChartIcon } from 'lucide-react';
 import { formatCurrency } from '../lib/utils';
 import { downloadExcel } from '../lib/excel';
+import { Navigate } from 'react-router-dom';
 
 export default function ReportsPage() {
-  const { contracts, payments, customers } = useAppStore();
+  const { contracts, payments, customers, currentUser } = useAppStore();
+
+  if (currentUser?.role === 'customer') {
+    return <Navigate to="/" replace />;
+  }
 
   const totalSales = contracts.reduce((sum, c) => sum + c.totalAmount, 0);
   const totalCollected = contracts.reduce((sum, c) => sum + c.downPayment, 0) + payments.reduce((sum, p) => sum + p.amount, 0);

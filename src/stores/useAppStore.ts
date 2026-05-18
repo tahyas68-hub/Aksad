@@ -2,9 +2,17 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 import { addDays, addWeeks, addMonths } from 'date-fns';
-import { Product, Customer, Contract, Installment, PaymentReceipt, AppNotification } from '../types';
+import { Product, Customer, Contract, Installment, PaymentReceipt, AppNotification, User, UserRole } from '../types';
 
 interface AppState {
+  users: User[];
+  currentUser: User | null;
+
+  // User Actions
+  addUser: (user: Omit<User, 'id' | 'createdAt'>) => void;
+  updateUser: (id: string, user: Partial<User>) => void;
+  deleteUser: (id: string) => void;
+
   products: Product[];
   customers: Customer[];
   contracts: Contract[];
@@ -35,9 +43,13 @@ interface AppState {
   clearNotifications: () => void;
 
   // Settings Action
+  isAuthenticated: boolean;
+  login: (user: User) => void;
+  logout: () => void;
   theme: 'light' | 'dark';
   setTheme: (theme: 'light' | 'dark') => void;
   resetDatabase: () => void;
+  resetPartially: (flags: { contracts?: boolean, payments?: boolean, notifications?: boolean, inventory?: boolean }) => void;
 }
 
 const generateInstallments = (
@@ -73,12 +85,63 @@ const generateInstallments = (
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
+      users: [
+        {
+          id: '1',
+          name: 'مدير النظام',
+          username: 'admin',
+          password: 'password',
+          role: 'admin',
+          isActive: true,
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: '2',
+          name: 'أحمد التاجر',
+          username: 'merchant',
+          password: 'password',
+          role: 'merchant',
+          isActive: true,
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: '3',
+          name: 'سالم العميل',
+          username: 'customer',
+          password: 'password',
+          role: 'customer',
+          isActive: true,
+          createdAt: new Date().toISOString()
+        }
+      ],
+      currentUser: null,
       products: [],
       customers: [],
       contracts: [],
       payments: [],
       notifications: [],
       theme: 'light',
+      isAuthenticated: false,
+
+      // User Actions
+      addUser: (user) => set((state) => ({
+        users: [...state.users, {
+          ...user,
+          id: uuidv4(),
+          createdAt: new Date().toISOString()
+        }]
+      })),
+
+      updateUser: (id, data) => set((state) => ({
+        users: state.users.map(u => u.id === id ? { ...u, ...data } : u)
+      })),
+
+      deleteUser: (id) => set((state) => ({
+        users: state.users.filter(u => u.id !== id)
+      })),
+
+      login: (user) => set({ isAuthenticated: true, currentUser: user }),
+      logout: () => set({ isAuthenticated: false, currentUser: null }),
 
       setTheme: (theme) => set({ theme }),
 
@@ -261,11 +324,52 @@ export const useAppStore = create<AppState>()(
       clearNotifications: () => set({ notifications: [] }),
 
       resetDatabase: () => set({
+        users: [
+          {
+            id: '1',
+            name: 'مدير النظام',
+            username: 'admin',
+            password: 'password', // Reset completely
+            role: 'admin',
+            isActive: true,
+            createdAt: new Date().toISOString()
+          },
+          {
+            id: '2',
+            name: 'أحمد التاجر',
+            username: 'merchant',
+            password: 'password',
+            role: 'merchant',
+            isActive: true,
+            createdAt: new Date().toISOString()
+          },
+          {
+            id: '3',
+            name: 'سالم العميل',
+            username: 'customer',
+            password: 'password',
+            role: 'customer',
+            isActive: true,
+            createdAt: new Date().toISOString()
+          }
+        ],
+        currentUser: null,
+        isAuthenticated: false,
         products: [],
         customers: [],
         contracts: [],
         payments: [],
         notifications: []
+      }),
+
+      resetPartially: (flags) => set((state) => {
+        const updates: Partial<AppState> = {};
+        if (flags.contracts) updates.contracts = [];
+        if (flags.payments) updates.payments = [];
+        if (flags.notifications) updates.notifications = [];
+        if (flags.inventory) updates.products = [];
+        // Note: customers are kept since it wasn't requested to reset them granularly, but could be added
+        return updates;
       })
     }),
     {

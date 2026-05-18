@@ -15,6 +15,11 @@ import ContractDetailsPage from './pages/ContractDetails';
 import ReportsPage from './pages/Reports';
 import NotificationsPage from './pages/Notifications';
 import SettingsPage from './pages/Settings';
+import LoginPage from './pages/Login';
+import UsersPage from './pages/Users';
+import CustomerProductsPage from './pages/CustomerProducts';
+import CustomerContractsPage from './pages/CustomerContracts';
+import PaymentTimelinePage from './pages/PaymentTimeline';
 import { useAppStore } from './stores/useAppStore';
 
 function AppInitializer({ children }: { children: React.ReactNode }) {
@@ -49,18 +54,37 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
   return children;
 }
 
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAppStore();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
+
 export default function App() {
+  const { isAuthenticated } = useAppStore();
+
   return (
     <AppInitializer>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<AppLayout />}>
+          <Route path="/login" element={
+            isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />
+          } />
+          <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route index element={<DashboardPage />} />
+            <Route path="users" element={<UsersPage />} />
             <Route path="inventory" element={<InventoryPage />} />
+            <Route path="products" element={<CustomerProductsPage />} />
             <Route path="customers" element={<CustomersPage />} />
             <Route path="customers/:id" element={<CustomerDetailsPage />} />
             <Route path="contracts" element={<ContractsPage />} />
             <Route path="contracts/:id" element={<ContractDetailsPage />} />
+            <Route path="my-contracts" element={<CustomerContractsPage />} />
+            <Route path="payment-timeline" element={<PaymentTimelinePage />} />
             <Route path="reports" element={<ReportsPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
             <Route path="settings" element={<SettingsPage />} />

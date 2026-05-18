@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useAppStore } from '../stores/useAppStore';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
@@ -83,27 +83,40 @@ export default function ContractDetailsPage() {
         </Card>
       </div>
 
-       <div className="flex gap-2">
-         {contract.status === 'completed' && (
-           <Button variant="outline" className="flex-1" onClick={() => { archiveContract(contract.id); }}>
-             أرشفة العقد
+       {!isCustomer && (
+         <div className="flex gap-2">
+           {contract.status === 'completed' && (
+             <Button variant="outline" className="flex-1" onClick={() => { archiveContract(contract.id); }}>
+               أرشفة العقد
+             </Button>
+           )}
+           <Button variant="danger" className="flex-1" onClick={() => { 
+             if(confirm('هل أنت متأكد من حذف هذا العقد نهائياً؟')) {
+               deleteContract(contract.id);
+               navigate('/contracts');
+             }
+           }}>
+             <Trash2 className="w-4 h-4 ml-2" /> حذف
            </Button>
-         )}
-         <Button variant="danger" className="flex-1" onClick={() => { 
-           if(confirm('هل أنت متأكد من حذف هذا العقد نهائياً؟')) {
-             deleteContract(contract.id);
-             navigate('/contracts');
-           }
-         }}>
-           <Trash2 className="w-4 h-4 ml-2" /> حذف
-         </Button>
-         <Button variant="secondary" className="flex-1">
-           <Printer className="w-4 h-4 mr-2 ml-0" /> طباعة
-         </Button>
-         <Button variant="outline" onClick={handleExport}>
-           <Download className="w-4 h-4 mr-2 ml-0" /> تصدير
-         </Button>
-       </div>
+           <Button variant="secondary" className="flex-1">
+             <Printer className="w-4 h-4 mr-2 ml-0" /> طباعة
+           </Button>
+           <Button variant="outline" onClick={handleExport}>
+             <Download className="w-4 h-4 mr-2 ml-0" /> تصدير
+           </Button>
+         </div>
+       )}
+
+       {isCustomer && (
+         <div className="flex gap-2">
+           <Button variant="secondary" className="flex-1">
+             <Printer className="w-4 h-4 mr-2 ml-0" /> طباعة
+           </Button>
+           <Button variant="outline" onClick={handleExport}>
+             <Download className="w-4 h-4 mr-2 ml-0" /> تصدير الدفعات
+           </Button>
+         </div>
+       )}
 
        <div>
          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">جدول الدفعات</h3>
@@ -124,9 +137,9 @@ export default function ContractDetailsPage() {
                     return (
                       <tr 
                         key={inst.id} 
-                        className={`hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer ${isLate ? 'bg-rose-50/50 dark:bg-rose-900/20' : ''}`}
+                        className={`hover:bg-gray-50 dark:hover:bg-gray-800/50 ${!isCustomer && inst.status !== 'paid' ? 'cursor-pointer' : ''} ${isLate ? 'bg-rose-50/50 dark:bg-rose-900/20' : ''}`}
                         onClick={() => {
-                          if (inst.status !== 'paid') {
+                          if (!isCustomer && inst.status !== 'paid') {
                             setSelectedInstallment(inst);
                             setPaymentAmount((inst.amount - inst.paidAmount).toFixed(2));
                           }

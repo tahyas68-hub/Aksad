@@ -15,14 +15,30 @@ export type InstallmentType = 'daily' | 'weekly' | 'monthly';
 export type ContractStatus = 'active' | 'completed' | 'archived';
 export type InstallmentStatus = 'pending' | 'paid' | 'late';
 
+export interface ProductCategory {
+  id: string;
+  name: string;
+}
+
 export interface Product {
   id: string;
   name: string;
-  price: number;
+  price: number; // selling price
+  purchasePrice?: number; // original buying cost
   stock: number;
   imageUrl?: string;
   category: string;
   status: 'available' | 'out_of_stock';
+}
+
+export interface Expense {
+  id: string;
+  title: string;
+  category: string;
+  amount: number;
+  date: string;
+  paymentMethod?: string;
+  notes?: string;
 }
 
 export interface Customer {

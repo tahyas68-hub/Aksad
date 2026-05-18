@@ -14,8 +14,10 @@ import { downloadExcel } from '../lib/excel';
 export default function ContractDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { contracts, customers, products, updateInstallmentPayment, archiveContract, deleteContract } = useAppStore();
+  const { contracts, customers, products, updateInstallmentPayment, archiveContract, deleteContract, currentUser } = useAppStore();
   
+  const isCustomer = currentUser?.role === 'customer';
+
   const [selectedInstallment, setSelectedInstallment] = useState<any>(null);
   const [paymentAmount, setPaymentAmount] = useState('');
 

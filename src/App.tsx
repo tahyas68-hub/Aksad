@@ -20,6 +20,8 @@ import UsersPage from './pages/Users';
 import CustomerProductsPage from './pages/CustomerProducts';
 import CustomerContractsPage from './pages/CustomerContracts';
 import PaymentTimelinePage from './pages/PaymentTimeline';
+import AccountingPage from './pages/Accounting';
+import ExpensesPage from './pages/Expenses';
 import { useAppStore } from './stores/useAppStore';
 
 function AppInitializer({ children }: { children: React.ReactNode }) {
@@ -85,6 +87,8 @@ export default function App() {
             <Route path="contracts/:id" element={<ContractDetailsPage />} />
             <Route path="my-contracts" element={<CustomerContractsPage />} />
             <Route path="payment-timeline" element={<PaymentTimelinePage />} />
+            <Route path="accounting" element={<AccountingPage />} />
+            <Route path="expenses" element={<ExpensesPage />} />
             <Route path="reports" element={<ReportsPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
             <Route path="settings" element={<SettingsPage />} />

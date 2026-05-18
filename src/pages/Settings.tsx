@@ -6,11 +6,12 @@ import { Moon, Sun, Trash2, LogOut, AlertOctagon, CheckSquare, Square, Package, 
 import { useNavigate } from 'react-router-dom';
 
 export default function SettingsPage() {
-  const { theme, setTheme, resetDatabase, resetPartially, logout, currentUser } = useAppStore();
+  const { theme, setTheme, resetDatabase, resetPartially, logout, currentUser, productCategories, addProductCategory, deleteProductCategory } = useAppStore();
   const navigate = useNavigate();
   const [resetStep, setResetStep] = useState(0); // 0: hidden, 1: confirm full, 2: password
   const [resetPassword, setResetPassword] = useState('');
   const [resetError, setResetError] = useState('');
+  const [newCategoryName, setNewCategoryName] = useState('');
 
   // Granular Options
   const [resetOptions, setResetOptions] = useState({
@@ -46,7 +47,7 @@ export default function SettingsPage() {
            useAppStore.getState().addNotification({
              title: 'عملية ضبط نظام',
              message: `قام ${currentUser.name} بإجراء مسح جزئي للبيانات`,
-             type: 'warning'
+             type: 'late'
            });
          }
        }
@@ -120,6 +121,59 @@ export default function SettingsPage() {
             >
               مدير المستخدمين
             </button>
+          </div>
+        </Card>
+      )}
+
+      {currentUser?.role === 'admin' && (
+        <Card className="flex flex-col gap-4 !p-5 dark:bg-slate-950 border-emerald-200/60 dark:border-emerald-900/50 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="flex items-center gap-3 text-emerald-600 dark:text-emerald-400 relative z-10">
+            <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/30">
+              <Package className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="font-bold text-lg">إدارة تصنيفات المنتجات</div>
+              <p className="text-xs text-slate-500 mt-0.5">أضف أو احذف تصنيفات تظهر عند إضافة منتج جديد بالمخزون.</p>
+            </div>
+          </div>
+          
+          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 relative z-10">
+            <div className="flex gap-2 mb-4">
+              <Input
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                placeholder="اسم التصنيف الجديد..."
+                className="flex-1"
+              />
+              <button 
+                onClick={() => {
+                  if(newCategoryName) {
+                    addProductCategory({ name: newCategoryName });
+                    setNewCategoryName('');
+                  }
+                }}
+                disabled={!newCategoryName}
+                className="bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-xl px-4 py-2 font-bold transition-all"
+              >
+                إضافة
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {productCategories.map(cat => (
+                <div key={cat.id} className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm font-medium">
+                  {cat.name}
+                  <button 
+                    onClick={() => {
+                      if(confirm('هل أنت متأكد من حذف هذا التصنيف؟')) { deleteProductCategory(cat.id); }
+                    }}
+                    className="text-rose-500 hover:text-rose-700"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         </Card>
       )}

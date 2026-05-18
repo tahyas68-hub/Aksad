@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Package, Users, FileText, PieChart, Bell, Settings, ShieldCheck, History } from 'lucide-react';
+import { Home, Package, Users, FileText, PieChart, Bell, Settings, ShieldCheck, History, DollarSign, Wallet } from 'lucide-react';
 import { useAppStore } from '../../stores/useAppStore';
 import { cn } from '../../lib/utils';
 
@@ -19,6 +19,8 @@ export default function AppLayout() {
       case '/contracts': return 'العقود';
       case '/my-contracts': return 'عقودي';
       case '/reports': return 'التقارير';
+      case '/accounting': return 'المالية';
+      case '/expenses': return 'المصروفات';
       case '/notifications': return 'الإشعارات';
       case '/settings': return 'الإعدادات';
       default: 
@@ -64,6 +66,7 @@ export default function AppLayout() {
             <>
               <NavItem to="/users" icon={<ShieldCheck className="w-6 h-6" />} label="المستخدمين" />
               <NavItem to="/contracts" icon={<FileText className="w-6 h-6" />} label="العقود" />
+              <NavItem to="/accounting" icon={<Wallet className="w-6 h-6" />} label="المالية" />
               <NavItem to="/reports" icon={<PieChart className="w-6 h-6" />} label="التقارير" />
             </>
           )}
@@ -73,7 +76,7 @@ export default function AppLayout() {
               <NavItem to="/inventory" icon={<Package className="w-6 h-6" />} label="المخزون" />
               <NavItem to="/customers" icon={<Users className="w-6 h-6" />} label="العملاء" />
               <NavItem to="/contracts" icon={<FileText className="w-6 h-6" />} label="العقود" />
-              <NavItem to="/reports" icon={<PieChart className="w-6 h-6" />} label="التقارير" />
+              <NavItem to="/accounting" icon={<Wallet className="w-6 h-6" />} label="المالية" />
             </>
           )}
 

@@ -6,13 +6,37 @@ import { Badge } from '../components/ui/Badge';
 import { Modal } from '../components/ui/Modal';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
-import { Search, Plus, Upload, Download, Edit2, Trash2 } from 'lucide-react';
+import { Search, Plus, Upload, Download, Edit2, Trash2, Zap, Armchair, Battery, Circle, Package, MonitorSmartphone, CarFront } from 'lucide-react';
 import { formatCurrency } from '../lib/utils';
 import { parseExcel, downloadExcel } from '../lib/excel';
 import { Navigate } from 'react-router-dom';
 
+const getCategoryIcon = (category: string) => {
+  const norm = category.toLowerCase();
+  
+  if (norm.includes('إلكتروني') || norm.includes('electronic') || norm.includes('كهرب')) {
+    return <Zap className="w-6 h-6 text-indigo-500" />;
+  }
+  if (norm.includes('منزل') || norm.includes('home') || norm.includes('أثاث')) {
+    return <Armchair className="w-6 h-6 text-orange-500" />;
+  }
+  if (norm.includes('ذكية') || norm.includes('smart') || norm.includes('موبايل') || norm.includes('جوال')) {
+    return <MonitorSmartphone className="w-6 h-6 text-blue-500" />;
+  }
+  if (norm.includes('بطاري') || norm.includes('battery')) {
+    return <Battery className="w-6 h-6 text-emerald-500" />;
+  }
+  if (norm.includes('سيار') || norm.includes('car')) {
+    return <CarFront className="w-6 h-6 text-rose-500" />
+  }
+  if (norm.includes('إطار') || norm.includes('tire') || norm.includes('كاوتش')) {
+    return <Circle className="w-6 h-6 text-slate-500" />;
+  }
+  return <Package className="w-6 h-6 text-slate-400" />;
+};
+
 export default function InventoryPage() {
-  const { products, addProduct, updateProduct, deleteProduct, importProducts, currentUser } = useAppStore();
+  const { products, productCategories, addProduct, updateProduct, deleteProduct, importProducts, currentUser } = useAppStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -24,6 +48,7 @@ export default function InventoryPage() {
   const [formData, setFormData] = useState({
     name: '',
     price: '',
+    purchasePrice: '',
     stock: '',
     category: ''
   });
@@ -41,12 +66,13 @@ export default function InventoryPage() {
       setFormData({
         name: product.name,
         price: product.price.toString(),
+        purchasePrice: product.purchasePrice ? product.purchasePrice.toString() : '',
         stock: product.stock.toString(),
         category: product.category
       });
     } else {
       setEditingId(null);
-      setFormData({ name: '', price: '', stock: '', category: '' });
+      setFormData({ name: '', price: '', purchasePrice: '', stock: '', category: '' });
     }
     setIsModalOpen(true);
   };
@@ -57,6 +83,7 @@ export default function InventoryPage() {
     const payload = {
       name: formData.name,
       price: parseFloat(formData.price),
+      purchasePrice: formData.purchasePrice ? parseFloat(formData.purchasePrice) : undefined,
       stock: parseInt(formData.stock),
       category: formData.category
     };
@@ -132,7 +159,7 @@ export default function InventoryPage() {
             <div className="w-14 h-14 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center flex-shrink-0 text-xl overflow-hidden relative">
               {product.imageUrl ? (
                 <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-              ) : '📦'}
+              ) : getCategoryIcon(product.category)}
             </div>
             
             <div className="flex-1 min-w-0">
@@ -178,8 +205,9 @@ export default function InventoryPage() {
             onChange={(e) => setFormData({...formData, category: e.target.value})}
           >
             <option value="">اختر التصنيف</option>
-            <option value="بطاريات">بطاريات</option>
-            <option value="إطارات">إطارات</option>
+            {productCategories.map(cat => (
+              <option key={cat.id} value={cat.name}>{cat.name}</option>
+            ))}
           </Select>
           <div className="grid grid-cols-2 gap-4">
             <Input 
@@ -187,6 +215,12 @@ export default function InventoryPage() {
               type="number" 
               value={formData.price} 
               onChange={(e) => setFormData({...formData, price: e.target.value})} 
+            />
+            <Input 
+              label="سعر الشراء (تكلفتك)" 
+              type="number" 
+              value={formData.purchasePrice} 
+              onChange={(e) => setFormData({...formData, purchasePrice: e.target.value})} 
             />
             <Input 
               label="كمية المخزون" 

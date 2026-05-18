@@ -2,7 +2,9 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 import { addDays, addWeeks, addMonths } from 'date-fns';
-import { Product, Customer, Contract, Installment, PaymentReceipt, AppNotification, User, UserRole } from '../types';
+import { Product, ProductCategory, Customer, Contract, Installment, PaymentReceipt, AppNotification, User, UserRole } from '../types';
+
+import { Expense } from '../types';
 
 interface AppState {
   users: User[];
@@ -13,17 +15,27 @@ interface AppState {
   updateUser: (id: string, user: Partial<User>) => void;
   deleteUser: (id: string) => void;
 
+  productCategories: ProductCategory[];
   products: Product[];
   customers: Customer[];
   contracts: Contract[];
   payments: PaymentReceipt[];
   notifications: AppNotification[];
+  expenses: Expense[];
 
   // Inventory Actions
-  addProduct: (product: Omit<Product, 'id' | 'status'>) => void;
+  addProductCategory: (category: Omit<ProductCategory, 'id'>) => void;
+  updateProductCategory: (id: string, category: Partial<ProductCategory>) => void;
+  deleteProductCategory: (id: string) => void;
+  addProduct: (product: Omit<Product, 'id' | 'status'> & { purchasePrice?: number }) => void;
   updateProduct: (id: string, product: Partial<Product>) => void;
   deleteProduct: (id: string) => void;
-  importProducts: (products: Omit<Product, 'id' | 'status'>[]) => void;
+  importProducts: (products: (Omit<Product, 'id' | 'status'> & { purchasePrice?: number })[]) => void;
+
+  // Expenses Actions
+  addExpense: (expense: Omit<Expense, 'id'>) => void;
+  updateExpense: (id: string, expense: Partial<Expense>) => void;
+  deleteExpense: (id: string) => void;
 
   // Customer Actions
   addCustomer: (customer: Omit<Customer, 'id' | 'createdAt'>) => void;
@@ -115,13 +127,33 @@ export const useAppStore = create<AppState>()(
         }
       ],
       currentUser: null,
+      productCategories: [
+        { id: uuidv4(), name: 'بطاريات' },
+        { id: uuidv4(), name: 'إطارات' },
+        { id: uuidv4(), name: 'إلكترونيات' },
+        { id: uuidv4(), name: 'اخرى' }
+      ],
       products: [],
       customers: [],
       contracts: [],
       payments: [],
       notifications: [],
+      expenses: [],
       theme: 'light',
       isAuthenticated: false,
+
+      // Expenses Actions
+      addExpense: (expense) => set((state) => ({
+        expenses: [{ ...expense, id: uuidv4() }, ...state.expenses]
+      })),
+
+      updateExpense: (id, data) => set((state) => ({
+        expenses: state.expenses.map(e => e.id === id ? { ...e, ...data } : e)
+      })),
+
+      deleteExpense: (id) => set((state) => ({
+        expenses: state.expenses.filter(e => e.id !== id)
+      })),
 
       // User Actions
       addUser: (user) => set((state) => ({
@@ -144,6 +176,18 @@ export const useAppStore = create<AppState>()(
       logout: () => set({ isAuthenticated: false, currentUser: null }),
 
       setTheme: (theme) => set({ theme }),
+
+      addProductCategory: (category) => set((state) => ({
+        productCategories: [...state.productCategories, { ...category, id: uuidv4() }]
+      })),
+
+      updateProductCategory: (id, data) => set((state) => ({
+        productCategories: state.productCategories.map(c => c.id === id ? { ...c, ...data } : c)
+      })),
+
+      deleteProductCategory: (id) => set((state) => ({
+        productCategories: state.productCategories.filter(c => c.id !== id)
+      })),
 
       addProduct: (product) => set((state) => ({
         products: [...state.products, {

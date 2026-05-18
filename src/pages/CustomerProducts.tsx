@@ -1,9 +1,33 @@
 import React from 'react';
 import { useAppStore } from '../stores/useAppStore';
 import { Card } from '../components/ui/Card';
-import { Package } from 'lucide-react';
+import { Package, Zap, Armchair, Battery, Circle, MonitorSmartphone, CarFront } from 'lucide-react';
 import { formatCurrency } from '../lib/utils';
 import { Navigate } from 'react-router-dom';
+
+const getCategoryIcon = (category: string) => {
+  const norm = category.toLowerCase();
+  
+  if (norm.includes('إلكتروني') || norm.includes('electronic') || norm.includes('كهرب')) {
+    return <Zap className="w-8 h-8 text-indigo-500" />;
+  }
+  if (norm.includes('منزل') || norm.includes('home') || norm.includes('أثاث')) {
+    return <Armchair className="w-8 h-8 text-orange-500" />;
+  }
+  if (norm.includes('ذكية') || norm.includes('smart') || norm.includes('موبايل') || norm.includes('جوال')) {
+    return <MonitorSmartphone className="w-8 h-8 text-blue-500" />;
+  }
+  if (norm.includes('بطاري') || norm.includes('battery')) {
+    return <Battery className="w-8 h-8 text-emerald-500" />;
+  }
+  if (norm.includes('سيار') || norm.includes('car')) {
+    return <CarFront className="w-8 h-8 text-rose-500" />
+  }
+  if (norm.includes('إطار') || norm.includes('tire') || norm.includes('كاوتش')) {
+    return <Circle className="w-8 h-8 text-slate-500" />;
+  }
+  return <Package className="w-8 h-8 text-slate-400" />;
+};
 
 export default function CustomerProductsPage() {
   const { products, currentUser } = useAppStore();
@@ -28,9 +52,7 @@ export default function CustomerProductsPage() {
               <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center shrink-0">
                 {product.imageUrl ? (
                   <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover rounded-2xl" />
-                ) : (
-                  <Package className="w-8 h-8 text-blue-500" />
-                )}
+                ) : getCategoryIcon(product.category)}
               </div>
               <div className="flex-1">
                 <div className="flex justify-between items-start mb-1">

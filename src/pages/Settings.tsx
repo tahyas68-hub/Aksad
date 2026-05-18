@@ -23,7 +23,7 @@ export default function SettingsPage() {
 
   const handleLogout = () => {
     logout();
-    window.location.href = '/login';
+    navigate('/login');
   };
 
   const executeReset = () => {

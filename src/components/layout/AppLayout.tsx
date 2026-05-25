@@ -19,6 +19,7 @@ export default function AppLayout() {
       case '/contracts': return 'العقود';
       case '/my-contracts': return 'عقودي';
       case '/reports': return 'التقارير';
+      case '/installments': return 'الأقساط';
       case '/accounting': return 'المالية';
       case '/expenses': return 'المصروفات';
       case '/notifications': return 'الإشعارات';

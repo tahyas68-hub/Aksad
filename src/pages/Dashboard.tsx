@@ -2,7 +2,7 @@ import React from 'react';
 import { useAppStore } from '../stores/useAppStore';
 import { formatCurrency } from '../lib/utils';
 import { Card } from '../components/ui/Card';
-import { Wallet, TrendingUp, Users, AlertCircle, Package, FileText, Database, Shield, Activity, Download, Plus, Search } from 'lucide-react';
+import { Wallet, TrendingUp, Users, AlertCircle, Package, FileText, Database, Shield, Activity, Download, Plus, Search, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 
@@ -143,6 +143,9 @@ export default function DashboardPage() {
             <Link to="/reports" className="block col-span-2">
               <ButtonWithIcon icon={<Download className="w-4 h-4"/>} text="تصدير التقارير الشاملة" primary />
             </Link>
+            <Link to="/installments" className="block col-span-2">
+              <ButtonWithIcon icon={<Clock className="w-4 h-4 text-emerald-500"/>} text="استلام الأقساط" />
+            </Link>
           </div>
         </div>
 
@@ -226,6 +229,9 @@ export default function DashboardPage() {
           </Link>
           <Link to="/customers" className="block">
             <ButtonWithIcon icon={<Users className="w-4 h-4"/>} text="العملاء" />
+          </Link>
+          <Link to="/installments" className="block col-span-2">
+            <ButtonWithIcon icon={<Clock className="w-4 h-4 text-emerald-500"/>} text="استلام وتتبع الأقساط" />
           </Link>
           <Link to="/contracts" className="block">
             <ButtonWithIcon icon={<Search className="w-4 h-4"/>} text="بحث العقود" />

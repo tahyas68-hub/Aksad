@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("ar-IQ", {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "IQD",
     maximumFractionDigits: 0,

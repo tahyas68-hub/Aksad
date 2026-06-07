@@ -134,7 +134,15 @@ export const useAppStore = create<AppState>()(
         { id: uuidv4(), name: 'اخرى' }
       ],
       products: [],
-      customers: [],
+      customers: [
+        {
+          id: '3',
+          name: 'سالم العميل',
+          phone: 'customer',
+          address: '',
+          createdAt: new Date().toISOString()
+        }
+      ],
       contracts: [],
       payments: [],
       notifications: [],
@@ -156,20 +164,59 @@ export const useAppStore = create<AppState>()(
       })),
 
       // User Actions
-      addUser: (user) => set((state) => ({
-        users: [...state.users, {
+      addUser: (user) => set((state) => {
+        const id = uuidv4();
+        const newUser: User = {
           ...user,
-          id: uuidv4(),
+          id,
           createdAt: new Date().toISOString()
-        }]
-      })),
+        };
+        const updates: Partial<AppState> = {
+          users: [...state.users, newUser]
+        };
+        
+        if (user.role === 'customer') {
+          updates.customers = [...state.customers, {
+            id,
+            name: user.name,
+            phone: user.username,
+            address: '',
+            createdAt: newUser.createdAt
+          }];
+        }
+        
+        return updates;
+      }),
 
-      updateUser: (id, data) => set((state) => ({
-        users: state.users.map(u => u.id === id ? { ...u, ...data } : u)
-      })),
+      updateUser: (id, data) => set((state) => {
+        const updates: Partial<AppState> = {
+          users: state.users.map(u => u.id === id ? { ...u, ...data } : u)
+        };
+        
+        const user = state.users.find(u => u.id === id);
+        if (user?.role === 'customer' || data.role === 'customer') {
+          const customerExists = state.customers.some(c => c.id === id);
+          if (customerExists) {
+            updates.customers = state.customers.map(c => 
+              c.id === id ? { ...c, name: data.name ?? c.name, phone: data.username ?? c.phone } : c
+            );
+          } else if (data.role === 'customer') {
+            updates.customers = [...state.customers, {
+              id,
+              name: data.name ?? user.name,
+              phone: data.username ?? user.username,
+              address: '',
+              createdAt: user?.createdAt || new Date().toISOString()
+            }];
+          }
+        }
+        
+        return updates;
+      }),
 
       deleteUser: (id) => set((state) => ({
-        users: state.users.filter(u => u.id !== id)
+        users: state.users.filter(u => u.id !== id),
+        customers: state.customers.filter(c => c.id !== id)
       })),
 
       login: (user) => set({ isAuthenticated: true, currentUser: user }),
@@ -221,20 +268,36 @@ export const useAppStore = create<AppState>()(
         return { products: [...state.products, ...mapped] };
       }),
 
-      addCustomer: (customer) => set((state) => ({
-        customers: [...state.customers, {
+      addCustomer: (customer) => set((state) => {
+        const id = uuidv4();
+        const newCustomer = {
           ...customer,
-          id: uuidv4(),
+          id,
           createdAt: new Date().toISOString()
-        }]
-      })),
+        };
+        const newUser: User = {
+          id,
+          name: customer.name,
+          username: customer.phone,
+          password: 'password', // Default password for customer
+          role: 'customer',
+          isActive: true,
+          createdAt: newCustomer.createdAt
+        };
+        return {
+          customers: [...state.customers, newCustomer],
+          users: [...state.users, newUser]
+        };
+      }),
 
       updateCustomer: (id, data) => set((state) => ({
-        customers: state.customers.map(c => c.id === id ? { ...c, ...data } : c)
+        customers: state.customers.map(c => c.id === id ? { ...c, ...data } : c),
+        users: state.users.map(u => u.id === id ? { ...u, name: data.name ?? u.name, username: data.phone ?? u.username } : u)
       })),
 
       deleteCustomer: (id) => set((state) => ({
-        customers: state.customers.filter(c => c.id !== id)
+        customers: state.customers.filter(c => c.id !== id),
+        users: state.users.filter(u => u.id !== id)
       })),
 
       importCustomers: (newCustomers) => set((state) => {
@@ -400,7 +463,15 @@ export const useAppStore = create<AppState>()(
         currentUser: null,
         isAuthenticated: false,
         products: [],
-        customers: [],
+        customers: [
+          {
+            id: '3',
+            name: 'سالم العميل',
+            phone: 'customer',
+            address: '',
+            createdAt: new Date().toISOString()
+          }
+        ],
         contracts: [],
         payments: [],
         notifications: []

@@ -128,7 +128,7 @@ export default function LoginPage() {
               تسجيل الدخول
             </h1>
             <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">
-              نظام إدارة المبيعات والتقسيط
+              نظام المبيعات والتقسيط
             </p>
           </div>
 

@@ -232,16 +232,18 @@ export default function UsersPage() {
               </div>
             </div>
 
-            {user.id !== currentUser.id && (
-              <div className="flex items-center gap-2 mt-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-                <button
-                  title="إيقاف/تفعيل الحساب"
-                  onClick={() => toggleStatus(user)}
-                  className={`flex-1 flex items-center justify-center p-2.5 rounded-xl font-medium text-xs transition-colors ${user.isActive ? "text-rose-600 bg-rose-50 hover:bg-rose-100 dark:bg-rose-900/20 dark:hover:bg-rose-900/40" : "text-emerald-600 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40"}`}
-                >
-                  <Power className="w-4 h-4 ml-1.5" />
-                  {user.isActive ? "إيقاف" : "تفعيل"}
-                </button>
+            <div className="flex flex-col gap-2 mt-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                {user.id !== currentUser.id && (
+                  <button
+                    title="إيقاف/تفعيل الحساب"
+                    onClick={() => toggleStatus(user)}
+                    className={`flex-1 flex items-center justify-center p-2.5 rounded-xl font-medium text-xs transition-colors ${user.isActive ? "text-rose-600 bg-rose-50 hover:bg-rose-100 dark:bg-rose-900/20 dark:hover:bg-rose-900/40" : "text-emerald-600 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40"}`}
+                  >
+                    <Power className="w-4 h-4 ml-1.5" />
+                    {user.isActive ? "إيقاف" : "تفعيل"}
+                  </button>
+                )}
                 <button
                   title="تعديل الحساب"
                   onClick={() => openEdit(user)}
@@ -250,23 +252,22 @@ export default function UsersPage() {
                   <Edit2 className="w-4 h-4 ml-1" />
                   تعديل
                 </button>
-                <button
-                  title="حذف"
-                  onClick={() => handleDelete(user.id)}
-                  className="p-2.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-colors shrink-0"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
+                {user.id !== currentUser.id && (
+                  <button
+                    title="حذف"
+                    onClick={() => handleDelete(user.id)}
+                    className="p-2.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-colors shrink-0"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                )}
               </div>
-            )}
-
-            {user.id === currentUser.id && (
-              <div className="mt-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-                <div className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-xs font-semibold p-2.5 rounded-xl text-center">
+              {user.id === currentUser.id && (
+                <div className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-xs font-semibold p-2.5 rounded-xl text-center w-full">
                   هذا حسابك الحالي
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </Card>
         ))}
         {filteredUsers.length === 0 && (
@@ -361,6 +362,7 @@ export default function UsersPage() {
                 </label>
                 <Select
                   value={formData.role}
+                  disabled={editingUserId === currentUser?.id}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
@@ -376,24 +378,29 @@ export default function UsersPage() {
               </div>
 
               <div className="pt-2">
-                <label className="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-800 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">
-                  <div className="relative flex items-center justify-center w-5 h-5 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 peer-checked:bg-indigo-600 peer-checked:border-indigo-600">
-                    <input
-                      type="checkbox"
-                      checked={formData.isActive}
-                      onChange={(e) =>
-                        setFormData({ ...formData, isActive: e.target.checked })
-                      }
-                      className="peer sr-only"
-                    />
-                    {formData.isActive && (
-                      <Shield className="w-3.5 h-3.5 text-white" />
-                    )}
-                  </div>
-                  <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                    تفعيل حساب المستخدم
-                  </span>
-                </label>
+                {editingUserId !== currentUser?.id && (
+                  <label className="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-800 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">
+                    <div className="relative flex items-center justify-center w-5 h-5 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 peer-checked:bg-indigo-600 peer-checked:border-indigo-600">
+                      <input
+                        type="checkbox"
+                        checked={formData.isActive}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            isActive: e.target.checked,
+                          })
+                        }
+                        className="peer sr-only"
+                      />
+                      {formData.isActive && (
+                        <Shield className="w-3.5 h-3.5 text-white" />
+                      )}
+                    </div>
+                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                      تفعيل حساب المستخدم
+                    </span>
+                  </label>
+                )}
               </div>
 
               <div className="flex gap-3 pt-6 border-t border-slate-100 dark:border-slate-800">

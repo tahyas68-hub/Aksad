@@ -193,6 +193,10 @@ export const useAppStore = create<AppState>()(
           users: state.users.map(u => u.id === id ? { ...u, ...data } : u)
         };
         
+        if (state.currentUser?.id === id) {
+          updates.currentUser = { ...state.currentUser, ...data } as User;
+        }
+
         const user = state.users.find(u => u.id === id);
         if (user?.role === 'customer' || data.role === 'customer') {
           const customerExists = state.customers.some(c => c.id === id);

@@ -5,7 +5,6 @@ import {
   Lock,
   Eye,
   EyeOff,
-  Fingerprint,
   ShieldCheck,
   HelpCircle,
   Loader2,
@@ -63,25 +62,6 @@ export default function LoginPage() {
         setIsLoading(false);
         setError("اسم المستخدم أو كلمة المرور غير صحيحة");
         triggerShake();
-      }
-    }, 1000);
-  };
-
-  const handleBiometric = () => {
-    setIsLoading(true);
-    // Simulate biometric delay
-    setTimeout(() => {
-      const demoUsername = "admin";
-      const user = users.find((u) => u.username === demoUsername);
-      if (user) {
-        useAppStore
-          .getState()
-          .updateUser(user.id, { lastLogin: new Date().toISOString() });
-        setIsLoading(false);
-        login(user);
-      } else {
-        setIsLoading(false);
-        setError("تعذر تسجيل الدخول بالبصمة");
       }
     }, 1000);
   };
@@ -264,25 +244,6 @@ export default function LoginPage() {
                 </button>
               </div>
             </form>
-
-            <div className="mt-8 flex items-center justify-center gap-4">
-              <div className="h-[1px] flex-1 bg-slate-200 dark:bg-slate-800" />
-              <span className="text-[11px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-bold px-2">
-                تسجيل سريع
-              </span>
-              <div className="h-[1px] flex-1 bg-slate-200 dark:bg-slate-800" />
-            </div>
-
-            <div className="mt-6">
-              <button
-                type="button"
-                onClick={handleBiometric}
-                className="w-full flex items-center justify-center gap-3 h-14 bg-white dark:bg-slate-950 hover:bg-slate-50 dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-2xl font-bold transition-all shadow-sm"
-              >
-                <Fingerprint className="w-6 h-6 text-indigo-500 dark:text-indigo-400" />
-                الدخول بالبصمة
-              </button>
-            </div>
           </motion.div>
         </motion.div>
 
@@ -314,28 +275,6 @@ export default function LoginPage() {
           </div>
         </motion.div>
       </div>
-
-      {/* Biometric Loading Overlay */}
-      <AnimatePresence>
-        {isLoading && !username && !password && (
-          <motion.div
-            initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
-            animate={{ opacity: 1, backdropFilter: "blur(8px)" }}
-            exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
-            className="absolute inset-0 z-50 bg-white/60 dark:bg-slate-950/60 flex flex-col items-center justify-center"
-          >
-            <div className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] shadow-2xl shadow-blue-900/10 dark:shadow-none border border-slate-100 dark:border-slate-800 flex flex-col items-center">
-              <Loader2 className="w-10 h-10 text-blue-600 dark:text-blue-500 animate-spin mb-4" />
-              <p className="text-slate-800 dark:text-slate-200 font-bold text-lg">
-                جاري التحقق من الهوية...
-              </p>
-              <p className="text-slate-500 text-sm mt-1">
-                يرجى الانتظار للحظات
-              </p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

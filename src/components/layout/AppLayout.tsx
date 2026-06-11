@@ -7,7 +7,14 @@ import { cn } from '../../lib/utils';
 export default function AppLayout() {
   const location = useLocation();
   const { notifications, currentUser } = useAppStore();
-  const unreadNotifications = notifications.filter(n => !n.read).length;
+  const myNotifications = notifications.filter(n => {
+    if (currentUser?.role === 'customer') {
+      const matchingCustomer = useAppStore.getState().customers.find(c => c.phone === currentUser.username || c.id === currentUser.id);
+      return n.customerId === matchingCustomer?.id;
+    }
+    return true; // Admin/merchant see everything
+  });
+  const unreadNotifications = myNotifications.filter(n => !n.read).length;
 
   const getPageTitle = () => {
     switch (location.pathname) {

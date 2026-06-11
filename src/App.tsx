@@ -24,9 +24,12 @@ import AccountingPage from './pages/Accounting';
 import ExpensesPage from './pages/Expenses';
 import InstallmentsPage from './pages/Installments';
 import { useAppStore } from './stores/useAppStore';
+import { useAutoNotifications } from './hooks/useAutoNotifications';
 
 function AppInitializer({ children }: { children: React.ReactNode }) {
   const { products, addProduct, customers, addCustomer, addNotification, theme } = useAppStore();
+  
+  useAutoNotifications();
 
   useEffect(() => {
     // Apply theme

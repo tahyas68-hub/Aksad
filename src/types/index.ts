@@ -89,8 +89,9 @@ export interface AppNotification {
   id: string;
   title: string;
   message: string;
-  type: 'due' | 'late' | 'payment' | 'completed';
+  type: 'due' | 'late' | 'payment' | 'completed' | 'whatsapp';
   read: boolean;
   date: string;
   relatedId?: string;
+  customerId?: string; // If specific to a customer
 }

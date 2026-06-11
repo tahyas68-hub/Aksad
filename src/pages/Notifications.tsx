@@ -7,6 +7,7 @@ import {
   AlertCircle,
   CheckCircle,
   Clock,
+  MessageCircle,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { arMA as ar } from "date-fns/locale";
@@ -21,8 +22,17 @@ export default function NotificationsPage() {
   } = useAppStore();
   const navigate = useNavigate();
 
-  // For this demo, let's treat all notifications as relevant. In real app we would filter by userId.
-  const myNotifications = [...notifications].reverse();
+  const myNotifications = [...notifications]
+    .filter(n => {
+      // If no customerId is specified, maybe it's a global notification.
+      // But if user is customer, only show notifications targeting them personally or global ones meant for them
+      if (currentUser?.role === 'customer') {
+        const matchingCustomer = useAppStore.getState().customers.find(c => c.phone === currentUser.username || c.id === currentUser.id);
+        return n.customerId === matchingCustomer?.id;
+      }
+      return true; // Admin/merchant see everything
+    })
+    .reverse();
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -34,6 +44,8 @@ export default function NotificationsPage() {
         return <CheckCircle className="w-5 h-5 text-indigo-500" />;
       case "due":
         return <Clock className="w-5 h-5 text-amber-500" />;
+      case "whatsapp":
+        return <MessageCircle className="w-5 h-5 text-emerald-500" />;
       default:
         return <Bell className="w-5 h-5 text-blue-500" />;
     }

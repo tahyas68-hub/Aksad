@@ -27,7 +27,7 @@ import { useAppStore } from './stores/useAppStore';
 import { useAutoNotifications } from './hooks/useAutoNotifications';
 
 function AppInitializer({ children }: { children: React.ReactNode }) {
-  const { products, addProduct, customers, addCustomer, addNotification, theme } = useAppStore();
+  const { products, addProduct, customers, addCustomer, addNotification, theme, users, addUser } = useAppStore();
   
   useAutoNotifications();
 
@@ -41,6 +41,29 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
   }, [theme]);
 
   useEffect(() => {
+    // Seed users if empty
+    if (!users || users.length === 0) {
+      useAppStore.getState().resetDatabase(); // Ensure defaults if fully corrupted
+    } else {
+      // Ensure all 3 default roles exist (migration for existing localStorage)
+      const storeState = useAppStore.getState();
+      const currentUsers = storeState.users;
+      let usersAdded = false;
+
+      if (!currentUsers.find(u => u.username === 'admin')) {
+        storeState.addUser({ name: 'مدير النظام', username: 'admin', password: 'password', role: 'admin', isActive: true });
+        usersAdded = true;
+      }
+      if (!currentUsers.find(u => u.username === 'merchant')) {
+        storeState.addUser({ name: 'أحمد التاجر', username: 'merchant', password: 'password', role: 'merchant', isActive: true });
+        usersAdded = true;
+      }
+      if (!currentUsers.find(u => u.username === 'customer')) {
+        storeState.addUser({ name: 'سالم العميل', username: 'customer', password: 'password', role: 'customer', isActive: true });
+        usersAdded = true;
+      }
+    }
+
     // Seed initial data if empty
     if (products.length === 0) {
       addProduct({ name: 'آيفون 15 برو ماكس', price: 2100000, stock: 15, category: 'إلكترونيات' });

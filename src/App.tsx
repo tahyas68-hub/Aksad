@@ -50,16 +50,8 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
       const currentUsers = storeState.users;
       let usersAdded = false;
 
-      if (!currentUsers.find(u => u.username === 'admin')) {
+      if (!currentUsers.find(u => u.role === 'admin')) {
         storeState.addUser({ name: 'مدير النظام', username: 'admin', password: 'password', role: 'admin', isActive: true });
-        usersAdded = true;
-      }
-      if (!currentUsers.find(u => u.username === 'merchant')) {
-        storeState.addUser({ name: 'أحمد التاجر', username: 'merchant', password: 'password', role: 'merchant', isActive: true });
-        usersAdded = true;
-      }
-      if (!currentUsers.find(u => u.username === 'customer')) {
-        storeState.addUser({ name: 'سالم العميل', username: 'customer', password: 'password', role: 'customer', isActive: true });
         usersAdded = true;
       }
     }

@@ -434,51 +434,32 @@ export const useAppStore = create<AppState>()(
 
       clearNotifications: () => set({ notifications: [] }),
 
-      resetDatabase: () => set({
-        users: [
+      resetDatabase: () => set((state) => {
+        // Keep existing users to prevent default deleted users from returning, 
+        // but ensure at least an admin exists if the list is somehow empty.
+        const currentUsers = state.users && state.users.length > 0 ? state.users : [
           {
             id: '1',
             name: 'مدير النظام',
             username: 'admin',
-            password: 'password', // Reset completely
-            role: 'admin',
-            isActive: true,
-            createdAt: new Date().toISOString()
-          },
-          {
-            id: '2',
-            name: 'أحمد التاجر',
-            username: 'merchant',
             password: 'password',
-            role: 'merchant',
-            isActive: true,
-            createdAt: new Date().toISOString()
-          },
-          {
-            id: '3',
-            name: 'سالم العميل',
-            username: 'customer',
-            password: 'password',
-            role: 'customer',
+            role: 'admin' as const,
             isActive: true,
             createdAt: new Date().toISOString()
           }
-        ],
-        currentUser: null,
-        isAuthenticated: false,
-        products: [],
-        customers: [
-          {
-            id: '3',
-            name: 'سالم العميل',
-            phone: 'customer',
-            address: '',
-            createdAt: new Date().toISOString()
-          }
-        ],
-        contracts: [],
-        payments: [],
-        notifications: []
+        ];
+
+        return {
+          users: currentUsers,
+          currentUser: null,
+          isAuthenticated: false,
+          products: [],
+          customers: [],
+          contracts: [],
+          payments: [],
+          notifications: [],
+          expenses: []
+        };
       }),
 
       resetPartially: (flags) => set((state) => {

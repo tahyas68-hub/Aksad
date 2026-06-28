@@ -14,10 +14,7 @@ export function useAutoNotifications() {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
 
-    const threeDaysFromNow = new Date(now);
-    threeDaysFromNow.setDate(now.getDate() + 3);
-
-    // Find all pending installments that are due in exactly 3 days
+    // Find all pending installments
     contracts.forEach(contract => {
       if (contract.status !== 'active') return;
 
@@ -28,37 +25,59 @@ export function useAutoNotifications() {
         dueDate.setHours(0, 0, 0, 0);
 
         // Calculate diff in days
-        const diffTime = Math.abs(dueDate.getTime() - now.getTime());
+        const diffTime = dueDate.getTime() - now.getTime();
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
+        const customer = useAppStore.getState().customers.find(c => c.id === contract.customerId);
+        if (!customer) return;
+
+        // 3 Days before notification
         if (diffDays === 3) {
-          // It's exactly 3 days away. Check if we already have a notification for this.
-          const notificationId = `whatsapp-due-${installment.id}`;
-          
+          const notificationId = `reminder-3days-${installment.id}`;
           const alreadyNotified = notifications.some(n => n.relatedId === notificationId);
+          
           if (!alreadyNotified) {
-            // Find the customer
-            const customer = useAppStore.getState().customers.find(c => c.id === contract.customerId);
+            addNotification({
+              title: 'موعد القسط قد اقترب',
+              message: `عزيزي العميل، موعد سداد القسط القادم بقيمة ${installment.amount.toLocaleString()} د.ع هو بعد 3 أيام. يرجى الاستعداد للسداد.`,
+              type: 'due',
+              relatedId: notificationId,
+              customerId: customer.id
+            });
             
-            if (customer) {
-              // Add system notification for admin
-              addNotification({
-                title: 'تذكير واتساب تلقائي',
-                message: `تم إرسال تذكير تلقائي للعميل ${customer.name} بشأن قسط قادم بعد 3 أيام بقيمة ${installment.amount.toLocaleString()} د.ع`,
-                type: 'whatsapp',
-                relatedId: notificationId, // Use relatedId to prevent duplicates
-                customerId: customer.id
-              });
+            // Also notify admin
+            addNotification({
+              title: 'تذكير تلقائي',
+              message: `تم إرسال تذكير للعميل ${customer.name} بشأن قسط يستحق بعد 3 أيام.`,
+              type: 'due',
+              relatedId: `admin-${notificationId}`,
+              customerId: customer.id
+            });
+          }
+        }
 
-              // Add a separate notification for the customer specifically! Wait, the same notification can be visible to both Admin and Customer because we changed `myNotifications` filter in NotificationsPage.
+        // Overdue notification (passed due date)
+        if (diffDays < 0) {
+          const notificationId = `overdue-${installment.id}`;
+          const alreadyNotified = notifications.some(n => n.relatedId === notificationId);
+          
+          if (!alreadyNotified) {
+            addNotification({
+              title: 'موعد القسط قد فات',
+              message: `عزيزي العميل، لقد فات موعد سداد القسط المستحق بتاريخ ${dueDate.toLocaleDateString('ar-IQ')} بقيمة ${installment.amount.toLocaleString()} د.ع. يرجى المبادرة بالسداد.`,
+              type: 'late',
+              relatedId: notificationId,
+              customerId: customer.id
+            });
 
-              // Simulate sending actual WhatsApp message
-              // Example: a WhatsApp message link
-              const text = `أهلاً ${customer.name}، نود تذكيرك بقسط قادم بقيمة ${installment.amount.toLocaleString()} د.ع بعد 3 أيام. يرجى الاستعداد للسداد.`;
-              const encodedText = encodeURIComponent(text);
-              const phone = customer.phone.replace(/\D/g, ''); // Try to sanitize phone number
-              console.log(`[Auto WhatsApp] For ${customer.name}: https://wa.me/${phone}?text=${encodedText}`);
-            }
+            // Also notify admin
+            addNotification({
+              title: 'تنبيه دفع متأخر',
+              message: `تأخر العميل ${customer.name} عن سداد قسط مستحق بتاريخ ${dueDate.toLocaleDateString('ar-IQ')}.`,
+              type: 'late',
+              relatedId: `admin-${notificationId}`,
+              customerId: customer.id
+            });
           }
         }
       });
